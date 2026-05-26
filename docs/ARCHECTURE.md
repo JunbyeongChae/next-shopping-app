@@ -25,10 +25,13 @@ next-shopping-app/
 │   │   │
 │   │   ├── products/         # 상품 관련 페이지
 │   │   │   ├── page.tsx          # 상품 목록 (/products)
-│   │   │   └── [id]/page.tsx     # 상품 상세 (/products/[id])
+│   │   │   └── [id]/             # 상품 상세 (/products/[id])
+│   │   │       ├── page.tsx
+│   │   │       └── not-found.tsx # 상품 상세 전용 404
 │   │   │
 │   │   ├── cart/page.tsx     # 장바구니 (/cart)
 │   │   ├── checkout/page.tsx # 주문/결제 (/checkout)
+│   │   ├── order-complete/page.tsx # 주문 완료 안내 (/order-complete)
 │   │   │
 │   │   ├── mypage/           # 마이페이지 (로그인 필요)
 │   │   │   └── page.tsx
@@ -43,7 +46,11 @@ next-shopping-app/
 │   │       ├── orders/route.ts
 │   │       └── admin/
 │   │           ├── products/route.ts
-│   │           └── orders/[id]/route.ts
+│   │           ├── orders/[id]/route.ts
+│   │           └── stats/route.ts    # 대시보드 통계 API
+│   │
+│   │   ├── error.tsx         # 전역 에러 처리 UI
+│   │   └── not-found.tsx     # 전역 404 처리 UI
 │   │
 │   ├── components/           # 재사용 UI 컴포넌트
 │   │   ├── ui/               # Shadcn UI 자동 생성 컴포넌트 (수정 금지)
@@ -57,12 +64,15 @@ next-shopping-app/
 │   │   ├── queryKeys.ts      # TanStack Query Key 중앙 관리
 │   │   └── utils.ts          # 공통 유틸 함수 (cn 등)
 │   │
+│   ├── providers/            # 앱 전역 Provider 모음
+│   │   └── QueryProvider.tsx # TanStack Query 설정
+│   │
 │   ├── store/                # Zustand 클라이언트 상태 스토어
 │   │   └── cartStore.ts      # 장바구니 전역 상태
 │   │
 │   ├── actions/              # Next.js Server Actions
 │   │   ├── auth.actions.ts   # 회원가입 등 인증 관련 서버 액션
-│   │   └── order.actions.ts  # 주문 처리 서버 액션
+│   │   └── cart.actions.ts   # 장바구니 로컬-DB 동기화 서버 액션
 │   │
 │   ├── schemas/              # Zod 유효성 검사 스키마
 │   │   ├── auth.schema.ts    # 로그인/회원가입 스키마
@@ -119,10 +129,17 @@ src/middleware.ts        ← 라우트별 접근 권한 제어
 ```ts
 // lib/db.ts
 import { PrismaClient } from '@prisma/client'
+import { Pool } from 'pg'
+import { PrismaPg } from '@prisma/adapter-pg'
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient }
-export const prisma = globalForPrisma.prisma ?? new PrismaClient()
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+const pool = new Pool({ connectionString: process.env.DATABASE_URL })
+const adapter = new PrismaPg(pool)
+
+export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter })
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = prisma
+}
 ```
 
 Next.js 개발 서버는 핫 리로드 시 모듈을 재실행한다.
