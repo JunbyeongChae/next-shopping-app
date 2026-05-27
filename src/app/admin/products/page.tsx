@@ -4,6 +4,16 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ProductForm } from "@/components/admin/ProductForm";
 
 interface Product {
@@ -16,6 +26,7 @@ interface Product {
   imageUrl: string | null;
   isActive: boolean;
   createdAt: string;
+  _count: { orderItems: number };
 }
 
 async function fetchAdminProducts(): Promise<Product[]> {
@@ -51,6 +62,12 @@ export default function AdminProductsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
+  // AlertDialog 상태
+  const [dialog, setDialog] = useState<{
+    type: "delete" | "deactivate";
+    product: Product;
+  } | null>(null);
+
   const { data: products, isLoading, isError, error } = useQuery({
     queryKey: ["admin", "products"],
     queryFn: fetchAdminProducts,
@@ -78,10 +95,11 @@ export default function AdminProductsPage() {
     onError: (error: Error) => alert(error.message),
   });
 
-  const confirmDelete = (product: Product) => {
-    const message = `"${product.name}" 상품을 삭제하시겠습니까?\n\n주문 내역이 있으면 삭제 대신 비활성화됩니다.`;
-    if (confirm(message)) handleDelete(product.id);
-  };
+  const confirmDelete = (product: Product) =>
+    setDialog({ type: "delete", product });
+
+  const confirmDeactivate = (product: Product) =>
+    setDialog({ type: "deactivate", product });
 
   return (
     <div>
@@ -169,19 +187,30 @@ export default function AdminProductsPage() {
                     <div className="flex gap-2 justify-end">
                       {product.isActive ? (
                         <>
-                          {/* 활성 상품: 수정 / 삭제 */}
+                          {/* 수정 버튼 */}
                           <button
                             onClick={() => setEditingProduct(product)}
                             className="text-xs px-2.5 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-100 transition-colors"
                           >
                             수정
                           </button>
-                          <button
-                            onClick={() => confirmDelete(product)}
-                            className="text-xs px-2.5 py-1 rounded border border-red-200 text-red-500 hover:bg-red-50 transition-colors"
-                          >
-                            삭제
-                          </button>
+                          {/* 주문 이력 없으면 삭제, 있으면 비활성화 */}
+                          {product._count.orderItems === 0 ? (
+                            <button
+                              onClick={() => confirmDelete(product)}
+                              className="text-xs px-2.5 py-1 rounded border border-red-200 text-red-500 hover:bg-red-50 transition-colors"
+                            >
+                              삭제
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => confirmDeactivate(product)}
+                              className="text-xs px-2.5 py-1 rounded border border-orange-200 text-orange-500 hover:bg-orange-50 transition-colors"
+                              title={`주문 ${product._count.orderItems}건 있음`}
+                            >
+                              비활성화
+                            </button>
+                          )}
                         </>
                       ) : (
                         /* 비활성 상품: 활성화 버튼만 */
@@ -210,6 +239,51 @@ export default function AdminProductsPage() {
         onClose={() => setEditingProduct(null)}
         product={editingProduct ?? undefined}
       />
+
+      {/* 삭제 확인 AlertDialog */}
+      <AlertDialog open={dialog?.type === "delete"} onOpenChange={(open) => !open && setDialog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>상품을 삭제할까요?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <span className="font-medium text-gray-900">"{dialog?.product.name}"</span> 상품이
+              완전히 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-500 hover:bg-red-600 text-white"
+              onClick={() => { handleDelete(dialog!.product.id); setDialog(null); }}
+            >
+              삭제
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 비활성화 확인 AlertDialog */}
+      <AlertDialog open={dialog?.type === "deactivate"} onOpenChange={(open) => !open && setDialog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>상품을 비활성화할까요?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <span className="font-medium text-gray-900">"{dialog?.product.name}"</span> 상품에
+              주문 내역 {dialog?.product._count.orderItems}건이 있어 삭제 대신 비활성화 처리됩니다.
+              비활성화된 상품은 고객에게 노출되지 않으며, 나중에 다시 활성화할 수 있습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+              onClick={() => { handleToggle({ id: dialog!.product.id, isActive: false }); setDialog(null); }}
+            >
+              비활성화
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

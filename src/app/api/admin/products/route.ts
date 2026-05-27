@@ -24,6 +24,7 @@ export async function GET() {
 
   const products = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
+    include: { _count: { select: { orderItems: true } } },
   });
 
   return NextResponse.json(products);

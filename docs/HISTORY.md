@@ -90,3 +90,48 @@
 - `src/components/admin/ProductForm.tsx` — 상품 등록/수정 폼
 - `src/app/api/admin/products/route.ts` — 관리자 상품 등록 API (`POST`)
 - `src/app/api/admin/orders/[id]/route.ts` — 관리자 주문 상태 변경 API (`PATCH`)
+
+---
+
+## Day 2 — 2026-05-27 (2)
+
+### 🖼️ 홈 Hero 배너 캐러셀
+- `src/components/HeroBanner.tsx` — 신규 클라이언트 컴포넌트
+  - `public/images/banner/` 이미지 3장 슬라이드
+  - 5초 자동 재생 / 호버 시 일시정지
+  - 이전·다음 화살표 버튼, 네비게이션 도트
+  - 슬라이드별 개별 텍스트(라벨·제목) 설정
+- `src/app/page.tsx` — 기존 정적 배너 제거 후 `<HeroBanner />` 교체
+
+### 🛍️ 상품 상세 페이지 리디자인 (4XR 스타일)
+- `src/app/products/[id]/page.tsx` — 전면 재작성
+  - 브레드크럼 네비게이션 추가
+  - 썸네일 스트립 + 대형 메인 이미지 레이아웃
+  - 원가/할인율 표시, 서비스 안내 아이콘(무료반품·정품보증·30일교환)
+  - 상품 정보 테이블 (배송·교환반품·카테고리·재고)
+- `src/components/products/ProductDetailClient.tsx` — 신규 클라이언트 컴포넌트
+  - 혜택 정보 박스 (배송비·적립포인트·재고 상태)
+  - 수량 선택 (−/+), 총 상품금액 실시간 계산
+  - 위시리스트(♡) + 장바구니 + 바로구매 버튼 분리
+
+### 🧩 공통 레이아웃 수정
+- `src/app/layout.tsx` — `<Footer />` 적용 (누락 수정)
+- `src/components/Header.tsx` — 레이아웃 재배치
+  - 상품 목록 링크 → 로고 오른쪽(왼쪽 영역)으로 이동
+  - 장바구니 텍스트 → `ShoppingCart` 아이콘으로 교체, 오른쪽 인증 영역 왼쪽으로 이동
+- `src/components/CartBadge.tsx` — 텍스트 제거, lucide `ShoppingCart` 아이콘 적용
+
+### 🔧 관리자 상품 관리 개선
+- `src/app/api/admin/products/route.ts` — GET 응답에 `_count.orderItems` 포함
+- `src/app/admin/products/page.tsx`
+  - 주문 이력 없음 → 🔴 **삭제** 버튼 (실제 DELETE)
+  - 주문 이력 있음 → 🟠 **비활성화** 버튼 (isActive=false, 주문 건수 툴팁)
+  - `confirm()` 제거 → Shadcn **AlertDialog** 로 교체 (삭제/비활성화 각각 별도 다이얼로그)
+- `src/components/ui/alert-dialog.tsx` — Shadcn AlertDialog 컴포넌트 추가
+
+### 📦 주문/결제 UX 개선
+- `src/app/checkout/page.tsx` — 서버 컴포넌트로 전환, `auth()`로 세션 읽어 이름 전달
+- `src/components/CheckoutForm.tsx` — 신규 클라이언트 컴포넌트로 분리
+  - 받는 분 이름: 로그인 유저 이름 기본값 자동 입력 (수정 가능)
+  - 전화번호: 숫자만 입력해도 자동 포맷 (`010-1234-5678` / `010-123-4567` 10·11자리 모두 지원)
+  - 주문 완료 후 리다이렉트: `/order-complete` → `/mypage` 로 변경

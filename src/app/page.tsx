@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db';
 import { ProductGrid } from '@/components/products/ProductGrid';
+import HeroBanner from '@/components/HeroBanner';
 import Link from 'next/link';
 
 interface HomePageProps {
@@ -30,35 +31,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   return (
     <div>
       {/* ── Hero Banner ─────────────────────────────────────── */}
-      {/* -mx-4 -mt-8: layout의 px-4, py-8 상쇄 → 컨테이너 끝까지 채움 */}
-      <div className="relative -mx-4 -mt-8 mb-12 bg-gray-950 overflow-hidden">
-        {/* 배경 그라디언트 */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-950 to-black" />
-
-        {/* 장식용 대형 텍스트 */}
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 select-none pointer-events-none">
-          <span className="text-[110px] md:text-[160px] font-black text-white/[0.04] leading-none tracking-tighter">
-            STYLE
-          </span>
-        </div>
-
-        {/* 콘텐츠 */}
-        <div className="relative z-10 px-8 md:px-16 py-16 md:py-20">
-          <p className="text-xs tracking-[0.3em] text-gray-500 uppercase mb-4">
-            2026 S/S Collection
-          </p>
-          <h2 className="text-3xl md:text-5xl font-bold text-white leading-tight mb-8">
-            지금 가장<br />필요한 스타일링
-          </h2>
-          <Link
-            href="#products"
-            className="inline-flex items-center gap-2 bg-white text-gray-900 px-7 py-3 text-sm font-semibold hover:bg-gray-100 transition-colors"
-          >
-            쇼핑 시작하기
-            <span className="text-base">→</span>
-          </Link>
-        </div>
-      </div>
+      <HeroBanner />
 
       {/* ── 상품 목록 섹션 ──────────────────────────────────── */}
       <div id="products">

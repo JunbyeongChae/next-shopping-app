@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { QueryProvider } from "@/providers/QueryProvider"; // ← 추가
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -28,6 +29,7 @@ export default function RootLayout({
           {/* ← 추가 */}
           <Header />
           <main className="max-w-6xl mx-auto px-4 py-8">{children}</main>
+          <Footer />
         </QueryProvider>{" "}
         {/* ← 추가 */}
       </body>

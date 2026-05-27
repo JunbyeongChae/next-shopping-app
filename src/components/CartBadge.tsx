@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { ShoppingCart } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import {
   syncCartToDbAction,
@@ -49,11 +50,12 @@ export function CartBadge({ userId }: { userId?: string }) {
   return (
     <Link
       href="/cart"
-      className="relative text-sm text-gray-600 hover:text-gray-900"
+      className="relative p-1 text-gray-600 hover:text-gray-900 transition-colors"
+      aria-label="장바구니"
     >
-      장바구니
+      <ShoppingCart size={22} />
       {mounted && totalCount > 0 && (
-        <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+        <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold leading-none">
           {totalCount > 9 ? "9+" : totalCount}
         </span>
       )}
