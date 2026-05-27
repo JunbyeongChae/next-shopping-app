@@ -1,65 +1,108 @@
-import Image from "next/image";
+import { prisma } from '@/lib/db';
+import { ProductGrid } from '@/components/products/ProductGrid';
+import Link from 'next/link';
 
-export default function Home() {
+interface HomePageProps {
+  searchParams: Promise<{ category?: string }>;
+}
+
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const { category } = await searchParams;
+
+  const products = await prisma.product.findMany({
+    where: {
+      isActive: true,
+      ...(category ? { category } : {}),
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  const categories = await prisma.product.findMany({
+    select: { category: true },
+    distinct: ['category'],
+    where: { category: { not: null }, isActive: true },
+  });
+
+  const categoryList = categories
+    .map((p) => p.category)
+    .filter(Boolean) as string[];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div>
+      {/* ── Hero Banner ─────────────────────────────────────── */}
+      {/* -mx-4 -mt-8: layout의 px-4, py-8 상쇄 → 컨테이너 끝까지 채움 */}
+      <div className="relative -mx-4 -mt-8 mb-12 bg-gray-950 overflow-hidden">
+        {/* 배경 그라디언트 */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-950 to-black" />
+
+        {/* 장식용 대형 텍스트 */}
+        <div className="absolute right-8 top-1/2 -translate-y-1/2 select-none pointer-events-none">
+          <span className="text-[110px] md:text-[160px] font-black text-white/[0.04] leading-none tracking-tighter">
+            STYLE
+          </span>
+        </div>
+
+        {/* 콘텐츠 */}
+        <div className="relative z-10 px-8 md:px-16 py-16 md:py-20">
+          <p className="text-xs tracking-[0.3em] text-gray-500 uppercase mb-4">
+            2026 S/S Collection
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          <h2 className="text-3xl md:text-5xl font-bold text-white leading-tight mb-8">
+            지금 가장<br />필요한 스타일링
+          </h2>
+          <Link
+            href="#products"
+            className="inline-flex items-center gap-2 bg-white text-gray-900 px-7 py-3 text-sm font-semibold hover:bg-gray-100 transition-colors"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            쇼핑 시작하기
+            <span className="text-base">→</span>
+          </Link>
         </div>
-      </main>
+      </div>
+
+      {/* ── 상품 목록 섹션 ──────────────────────────────────── */}
+      <div id="products">
+
+        {/* 섹션 헤더 — 4XR 스타일 */}
+        <div className="flex items-center gap-4 mb-7">
+          <div>
+            <h2 className="text-base font-bold text-gray-900 tracking-tight">전체 상품</h2>
+            <p className="text-xs text-gray-400 mt-0.5">{products.length}개의 상품</p>
+          </div>
+          {/* 구분선 */}
+          <div className="flex-1 h-px bg-gray-200" />
+        </div>
+
+        {/* 카테고리 필터 */}
+        <div className="flex gap-2 mb-8 flex-wrap">
+          <Link
+            href="/"
+            className={`px-4 py-1.5 text-xs font-medium border transition-colors ${
+              !category
+                ? 'bg-gray-900 text-white border-gray-900'
+                : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
+            }`}
+          >
+            전체
+          </Link>
+          {categoryList.map((cat) => (
+            <Link
+              key={cat}
+              href={`/?category=${encodeURIComponent(cat)}`}
+              className={`px-4 py-1.5 text-xs font-medium border transition-colors ${
+                category === cat
+                  ? 'bg-gray-900 text-white border-gray-900'
+                  : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
+              }`}
+            >
+              {cat}
+            </Link>
+          ))}
+        </div>
+
+        {/* 상품 그리드 */}
+        <ProductGrid products={products} />
+      </div>
     </div>
   );
 }

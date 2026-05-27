@@ -1,14 +1,11 @@
-// Prisma Client(TypeScript 코드)를 생성하는 설정
 generator client {
   provider = "prisma-client-js"
 }
 
-// 어떤 DB를 사용할지, 연결 주소는 어디서 읽을지 설정
 datasource db {
   provider = "postgresql"
 }
 
-// User모델
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -23,7 +20,6 @@ model User {
   @@map("users")
 }
 
-// Product모델
 model Product {
   id          String   @id @default(cuid())
   name        String
@@ -32,6 +28,7 @@ model Product {
   stock       Int      @default(0)
   category    String?
   imageUrl    String?
+  isActive    Boolean  @default(true) // false: 주문 이력 보호를 위한 비활성화 상태
   createdAt   DateTime @default(now())
 
   orderItems  OrderItem[]
@@ -40,7 +37,6 @@ model Product {
   @@map("products")
 }
 
-// SystemCode모델
 model SystemCode {
   id         String @id @default(cuid())
   groupCode  String
@@ -54,7 +50,6 @@ model SystemCode {
   @@map("system_codes")
 }
 
-// Order모델
 model Order {
   id            String     @id @default(cuid())
   userId        String
@@ -72,7 +67,6 @@ model Order {
   @@map("orders")
 }
 
-// OrderItem모델
 model OrderItem {
   id        String  @id @default(cuid())
   orderId   String
@@ -86,7 +80,6 @@ model OrderItem {
   @@map("order_items")
 }
 
-// Cart모델
 model Cart {
   id        String     @id @default(cuid())
   userId    String     @unique
@@ -98,7 +91,6 @@ model Cart {
   @@map("carts")
 }
 
-//CartItem모델
 model CartItem {
   id        String  @id @default(cuid())
   cartId    String

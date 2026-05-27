@@ -13,10 +13,34 @@ async function main() {
   // ── 1. 공통코드 (주문상태) ──────────────────────────
   await prisma.systemCode.createMany({
     data: [
-      { groupCode: 'ORDER_STATUS', groupLabel: '주문상태', code: 'PENDING', label: '결제대기', sortOrder: 1 },
-      { groupCode: 'ORDER_STATUS', groupLabel: '주문상태', code: 'PAID', label: '결제완료', sortOrder: 2 },
-      { groupCode: 'ORDER_STATUS', groupLabel: '주문상태', code: 'SHIPPING', label: '배송중', sortOrder: 3 },
-      { groupCode: 'ORDER_STATUS', groupLabel: '주문상태', code: 'DONE', label: '배송완료', sortOrder: 4 }
+      {
+        groupCode: 'ORDER_STATUS',
+        groupLabel: '주문상태',
+        code: 'PENDING',
+        label: '결제대기',
+        sortOrder: 1
+      },
+      {
+        groupCode: 'ORDER_STATUS',
+        groupLabel: '주문상태',
+        code: 'PAID',
+        label: '결제완료',
+        sortOrder: 2
+      },
+      {
+        groupCode: 'ORDER_STATUS',
+        groupLabel: '주문상태',
+        code: 'SHIPPING',
+        label: '배송중',
+        sortOrder: 3
+      },
+      {
+        groupCode: 'ORDER_STATUS',
+        groupLabel: '주문상태',
+        code: 'DONE',
+        label: '배송완료',
+        sortOrder: 4
+      }
     ],
     skipDuplicates: true
   });
