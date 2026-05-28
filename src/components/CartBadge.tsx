@@ -29,22 +29,27 @@ export function CartBadge({ userId }: { userId?: string }) {
 
     // 2. 로그인 직후 딱 한 번만 실행되는 로직 (DB에서 복원하기)
     if (!isInitialized.current) {
-      getCartFromDbAction(userId).then((dbItems) => {
-        // 내 폰(로컬) 장바구니가 비어있고, DB에는 예전에 담아둔 게 있다면? -> DB 것을 로컬로 가져옴
-        if (dbItems.length > 0 && items.length === 0) {
-          setCart(dbItems);
-        } else {
-          // 비회원일 때 로컬에 담아둔 게 있다면? -> 그걸로 DB를 덮어씀 (백업)
-          syncCartToDbAction(userId, items);
-        }
-        isInitialized.current = true;
-      });
+      getCartFromDbAction(userId)
+        .then((dbItems) => {
+          // 내 폰(로컬) 장바구니가 비어있고, DB에는 예전에 담아둔 게 있다면? -> DB 것을 로컬로 가져옴
+          if (dbItems.length > 0 && items.length === 0) {
+            setCart(dbItems);
+          } else {
+            // 비회원일 때 로컬에 담아둔 게 있다면? -> 그걸로 DB를 덮어씀 (백업)
+            syncCartToDbAction(userId, items).catch(() => {});
+          }
+          isInitialized.current = true;
+        })
+        .catch(() => {
+          // 세션은 있지만 DB에 유저가 없는 경우 (만료된 세션 등) 에러 무시
+          isInitialized.current = true;
+        });
       return; // 첫 복원 시에는 여기서 종료
     }
 
     // 3. 복원이 끝난 후, 아이템이 변경될 때마다 발동되는 로직 (실시간 백업)
     // 수량 조절, 담기, 삭제 등 Zustand 데이터가 바뀔 때마다 즉시 DB로 백업 됨!
-    syncCartToDbAction(userId, items);
+    syncCartToDbAction(userId, items).catch(() => {});
   }, [userId, items, setCart]);
 
   return (

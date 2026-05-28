@@ -5,6 +5,10 @@ import { CartItem } from "@/store/cartStore";
 
 // 1. 상태 동기화 (로컬 장바구니 -> DB로 통째로 덮어쓰기)
 export async function syncCartToDbAction(userId: string, items: CartItem[]) {
+  // 세션에 userId가 있더라도 DB에 해당 유저가 없으면 (DB 리셋, 만료 세션 등) 조용히 종료
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) return { success: false };
+
   // 사용자의 기존 Cart 찾기 (없으면 새로 생성)
   let cart = await prisma.cart.findUnique({ where: { userId } });
   if (!cart) {
