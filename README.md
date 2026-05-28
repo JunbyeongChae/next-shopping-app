@@ -1,0 +1,1 @@
+# test: GitHub Actions CI 동작 확인
