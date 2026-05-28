@@ -12,7 +12,7 @@ export async function Header() {
         {/* 왼쪽: 로고 + 상품 목록 */}
         <div className="flex items-center gap-8">
           <Link href="/" className="text-xl font-bold text-gray-900">
-            🛍️ ShopApp2
+            🛍️ ShopApp3
           </Link>
           <nav className="flex items-center gap-6">
             <Link href="/products" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
